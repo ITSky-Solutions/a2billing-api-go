@@ -8,10 +8,7 @@ import (
 )
 
 func LoadDotEnv[T interface{}](config *T) {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalln("Failed to load environment variables:", err)
-	}
-
+	godotenv.Load()
 	if err := env.Parse(config); err != nil {
 		log.Fatalln(err)
 	}
