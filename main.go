@@ -1,11 +1,11 @@
 package main
 
 import (
-	"net/http"
-	"strconv"
-
 	"itsky/a2b-api-go/env"
 	"itsky/a2b-api-go/models"
+	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,19 +16,21 @@ func setupRouter() *gin.Engine {
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
-	r.GET("/clientbalance", getClientBalance)
-	r.POST("/clientrecharge", clientRecharge)
+	api := r.Group("/api")
+	api.GET("/clientbalance", getClientBalance)
+	api.POST("/clientrecharge", clientRecharge)
 
 	return r
 }
 
 func main() {
 	r := setupRouter()
-	r.Run(":"+env.Env.ApiPort)
+	r.Run(":" + env.Env.ApiPort)
 }
 
-func getClientBalance(c *gin.Context)  {
-	useralias := c.Query("kiraninumber");
+// /api/clientbalance?kiraninumber=
+func getClientBalance(c *gin.Context) {
+	useralias := c.Query("kiraninumber")
 
 	client := models.GetCard(useralias)
 	if client == nil {
@@ -36,23 +38,25 @@ func getClientBalance(c *gin.Context)  {
 		return
 	}
 
-	c.JSON(http.StatusOK, client)
+	c.JSON(http.StatusOK, map[string]any{"credit": client.Credit})
 }
 
-func clientRecharge(c *gin.Context)  {
-	useralias := c.Query("kiraninumber");
-	amount, err := strconv.Atoi(c.Query("amount"));
+// /api/clientRecharge?kiraninumber=&amount=&txRef=
+func clientRecharge(c *gin.Context) {
+	useralias := c.Query("kiraninumber")
+	amount, err := strconv.Atoi(c.Query("amount"))
+	txRef := c.Query("txRef")
 
-	if len(useralias) < 11 || err != nil || amount < 0 {
+	if len(useralias) < 11 || err != nil || amount < 0 || len(txRef) == 1 {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	client := models.CardRecharge(useralias, amount)
+	client := models.CardRecharge(useralias, amount, txRef, time.Now())
 	if client == nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	c.JSON(http.StatusOK, client)
+	c.JSON(http.StatusOK, map[string]any{"credit": client.Credit})
 }
