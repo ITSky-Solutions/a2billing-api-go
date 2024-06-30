@@ -3,34 +3,15 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"itsky/a2b-api-go/env"
 	"itsky/a2b-api-go/utils"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func getDB() *sql.DB {
-	var connStr string
-	if env.Env.DbPassword == "" {
-		connStr = fmt.Sprintf("%s@tcp(%s:%s)/%s", env.Env.DbUser, env.Env.DbHost, env.Env.DbPort, env.Env.DbName)
-	} else {
-		connStr = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-			env.Env.DbUser, env.Env.DbPassword, env.Env.DbHost, env.Env.DbPort, env.Env.DbName)
-	}
-
-	db, err := sql.Open("mysql", connStr)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	return db
-}
+var db *sql.DB
 
 func GetCard(username string) *Card {
-	db := getDB()
-	defer db.Close()
-
 	result := db.QueryRow("SELECT useralias,credit FROM cc_card WHERE useralias = ?", username)
 
 	client := Card{}
@@ -47,9 +28,6 @@ func GetCard(username string) *Card {
 // TODO(TobaniEG): create associated invoice
 // TODO(TobaniEG): differentiate between client and server errors, for error statuses
 func CardRecharge(useralias string, amount int, paymentTxRef string, paymentDate time.Time) *Card {
-	db := getDB()
-	defer db.Close()
-
 	// use transaction
 	tx, err := db.Begin()
 	if err != nil {

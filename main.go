@@ -3,6 +3,7 @@ package main
 import (
 	"itsky/a2b-api-go/env"
 	"itsky/a2b-api-go/models"
+	"itsky/a2b-api-go/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,7 +24,12 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
+
 func main() {
+	if err := models.ConnectDB(); err != nil {
+		utils.Log.Fatalln(err)
+	}
+	defer models.DisconnectDB()
 	r := setupRouter()
 	r.Run(":" + env.Env.ApiPort)
 }
