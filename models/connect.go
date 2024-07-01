@@ -7,6 +7,9 @@ import (
 	"itsky/a2b-api-go/utils"
 )
 
+// only use for testing
+func SetDB(s *sql.DB) { db = s }
+
 func ConnectDB() error {
 	var connStr string
 	if env.Env.DbPassword == "" {
