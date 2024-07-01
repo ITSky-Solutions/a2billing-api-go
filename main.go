@@ -24,7 +24,6 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-
 func main() {
 	if err := models.ConnectDB(); err != nil {
 		utils.Log.Fatalln(err)
@@ -47,18 +46,22 @@ func getClientBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]any{"credit": client.Credit})
 }
 
-// /api/clientRecharge?kiraninumber=&amount=&txRef=
+// /api/clientrecharge?kiraninumber=&amount=&txRef=
 func clientRecharge(c *gin.Context) {
 	useralias := c.Query("kiraninumber")
 	amount, err := strconv.Atoi(c.Query("amount"))
 	txRef := c.Query("txRef")
 
-	if len(useralias) < 11 || err != nil || amount < 0 || len(txRef) == 1 {
+	if len(useralias) != 11 || err != nil || amount < 0 || len(txRef) == 1 {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	client := models.CardRecharge(useralias, amount, txRef, time.Now())
+	client, err := models.CardRecharge(useralias, amount, txRef, time.Now())
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	if client == nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return

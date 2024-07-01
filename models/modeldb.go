@@ -26,13 +26,12 @@ func GetCard(username string) *Card {
 // https://github.com/Star2Billing/a2billing/blob/8dd474c6077544dcc757159a50149bbeb403c314/common/lib/Form/Class.FormHandler.inc.php#L1457
 // https://github.com/Star2Billing/a2billing/blob/8dd474c6077544dcc757159a50149bbeb403c314/common/lib/Form/Class.FormBO.php#L884
 // TODO(TobaniEG): create associated invoice
-// TODO(TobaniEG): differentiate between client and server errors, for error statuses
-func CardRecharge(useralias string, amount int, paymentTxRef string, paymentDate time.Time) *Card {
+func CardRecharge(useralias string, amount int, paymentTxRef string, paymentDate time.Time) (*Card, error) {
 	// use transaction
 	tx, err := db.Begin()
 	if err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -42,7 +41,7 @@ SELECT id,useralias,credit,vat
 FROM cc_card WHERE useralias = ?`,
 		useralias).Scan(&card.ID, &card.Useralias, &card.Credit, &card.Vat); err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, nil
 	}
 
 	paymentType := 0
@@ -52,7 +51,7 @@ VALUES (?, ?, ?, ?, ?, ?)
 		`, paymentDate, amount, card.ID, "Recharge API "+paymentTxRef, 1, paymentType)
 	if err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, err
 	}
 	paymentId, _ := createPayment.LastInsertId()
 
@@ -63,7 +62,7 @@ VALUES (?, ?, ?, ?, ?)
 	`, paymentDate, amountWithoutVat, card.ID, "Recharge API "+paymentTxRef, paymentType /* refill_type == payment_type */)
 	if err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, err
 	}
 	refillId, _ := createRefill.LastInsertId()
 
@@ -72,19 +71,19 @@ VALUES (?, ?, ?, ?, ?)
 	if _, err := tx.Exec("UPDATE cc_card SET credit = ? WHERE id = ?",
 		card.Credit, card.ID); err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, err
 	}
 
 	// link refill and payment
 	if _, err := tx.Exec("UPDATE cc_logpayment SET id_logrefill = ? WHERE id = ?",
 		refillId, paymentId); err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
 		utils.Log.Println(err)
-		return nil
+		return nil, err
 	}
-	return &card
+	return &card, nil
 }
