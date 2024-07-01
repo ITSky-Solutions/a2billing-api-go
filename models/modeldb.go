@@ -23,6 +23,7 @@ func GetCard(username string) *Card {
 	return &client
 }
 
+// https://github.com/Star2Billing/a2billing/blob/develop/admin/Public/form_data/FG_var_payment.inc
 // https://github.com/Star2Billing/a2billing/blob/8dd474c6077544dcc757159a50149bbeb403c314/common/lib/Form/Class.FormHandler.inc.php#L1457
 // https://github.com/Star2Billing/a2billing/blob/8dd474c6077544dcc757159a50149bbeb403c314/common/lib/Form/Class.FormBO.php#L884
 // TODO(TobaniEG): create associated invoice

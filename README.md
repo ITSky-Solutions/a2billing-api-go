@@ -27,3 +27,4 @@ go build .
 | API_DB_HOST | DB host | :white_check_mark: |
 | API_DB_PORT | DB port | :x: |
 | API_PORT    | Port | :x: |
+| API_KEY     | Client Auth Key | :white_check_mark: |

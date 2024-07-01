@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"itsky/a2b-api-go/env"
 	"itsky/a2b-api-go/models"
 	"net/http"
 	"net/http/httptest"
@@ -50,6 +51,7 @@ func TestClientBalance(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/clientbalance?kiraninumber="+args["kiraninumber"].(string), nil)
+	req.Header.Add("Authorization", env.Env.ApiKey)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -101,6 +103,7 @@ func TestClientRecharge(t *testing.T) {
 		fmt.Sprintf("/api/clientrecharge?kiraninumber=%s&amount=%d&txRef=%s",
 			args["kiraninumber"], args["amount"].(int), args["txRef"]),
 		nil)
+	req.Header.Add("Authorization", env.Env.ApiKey)
 	router.ServeHTTP(w, req)
 
 	t.Log(w.Body.String())

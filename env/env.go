@@ -22,6 +22,7 @@ type _Env struct {
 	DbPort     string `env:"API_DB_PORT"`
 
 	ApiPort string `env:"API_PORT"`
+	ApiKey  string `env:"API_KEY,required"`
 }
 
 var Env _Env
