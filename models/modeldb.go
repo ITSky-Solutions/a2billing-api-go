@@ -18,7 +18,7 @@ func GetCard(username string) *Card {
 	client := Card{}
 	err := result.Scan(&client.Useralias, &client.Credit)
 	if err != nil {
-		fmt.Println(err)
+		utils.Log.Println(err)
 		return nil
 	}
 	return &client

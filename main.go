@@ -5,7 +5,10 @@ import (
 	"itsky/a2b-api-go/models"
 	"itsky/a2b-api-go/utils"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +51,22 @@ func main() {
 	}
 	defer models.DisconnectDB()
 	r := setupRouter()
-	r.Run(":" + env.Env.ApiPort)
+
+	exit := make(chan os.Signal, 2)
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+
+	go func() {
+		if err := r.Run(":"+env.Env.ApiPort); err != nil {
+			utils.Log.Println(err)
+			exit <- syscall.Signal(0)
+		}
+	}()
+
+	if !gin.IsDebugging() {
+		utils.Log.Printf("Listening and serving HTTP on %s\n", env.Env.ApiPort)
+	}
+	<-exit
+	utils.Log.Println("Shutting down server...")
 }
 
 // /api/clientbalance?kiraninumber=
