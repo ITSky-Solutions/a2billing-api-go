@@ -14,8 +14,7 @@ Make sure you have [golang installed](https://go.dev/doc/install):
 ```sh
 git clone https://github.com/ITSky-Solutions/a2billing-api-go.git
 cd a2billing-api-go
-go build .
-./a2billing-api-go
+make start # builds and starts the server
 ```
 ## Environment Variables
 
