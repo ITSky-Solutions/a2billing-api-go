@@ -85,7 +85,7 @@ func getClientBalance(c *gin.Context) {
 // /api/clientrecharge?kiraninumber=&amount=&txRef=
 func clientRecharge(c *gin.Context) {
 	useralias := c.Query("kiraninumber")
-	amount, err := strconv.Atoi(c.Query("amount"))
+	amount, err := strconv.ParseFloat(c.Query("amount"), 64)
 	txRef := c.Query("txRef")
 
 	if len(useralias) != 11 || err != nil || amount < 0 || len(txRef) == 1 {

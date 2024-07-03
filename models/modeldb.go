@@ -27,7 +27,7 @@ func GetCard(username string) *Card {
 // https://github.com/Star2Billing/a2billing/blob/develop/admin/Public/form_data/FG_var_payment.inc
 // https://github.com/Star2Billing/a2billing/blob/8dd474c6077544dcc757159a50149bbeb403c314/common/lib/Form/Class.FormHandler.inc.php#L1457
 // https://github.com/Star2Billing/a2billing/blob/8dd474c6077544dcc757159a50149bbeb403c314/common/lib/Form/Class.FormBO.php#L884
-func CardRecharge(useralias string, amount int, paymentTxRef string, paymentDate time.Time) (*Card, error) {
+func CardRecharge(useralias string, amount float64, paymentTxRef string, paymentDate time.Time) (*Card, error) {
 	// use transaction
 	tx, err := db.Begin()
 	if err != nil {
@@ -56,7 +56,7 @@ VALUES (?, ?, ?, ?, ?, ?)
 	}
 	paymentId, _ := createPayment.LastInsertId()
 
-	amountWithoutVat := float64(amount) / (1 + (card.Vat / 100))
+	amountWithoutVat := amount / (1 + (card.Vat / 100))
 	createRefill, err := tx.Exec(`
 INSERT INTO cc_logrefill (date, credit, card_id, description, refill_type)
 VALUES (?, ?, ?, ?, ?)
