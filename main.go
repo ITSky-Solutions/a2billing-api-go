@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"itsky/a2b-api-go/env"
 	"itsky/a2b-api-go/models"
 	"itsky/a2b-api-go/utils"
@@ -56,7 +57,7 @@ func main() {
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 
 	go func() {
-		if err := r.Run(":"+env.Env.ApiPort); err != nil {
+		if err := r.Run(":" + env.Env.ApiPort); err != nil {
 			utils.Log.Println(err)
 			exit <- syscall.Signal(0)
 		}
@@ -88,8 +89,8 @@ func clientRecharge(c *gin.Context) {
 	amount, err := strconv.ParseFloat(c.Query("amount"), 64)
 	txRef := c.Query("txRef")
 
-	if len(useralias) != 11 || err != nil || amount < 0 || len(txRef) == 1 {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if len(useralias) != 11 || err != nil || amount < 0 || len(txRef) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid parameters"})
 		return
 	}
 
@@ -99,7 +100,8 @@ func clientRecharge(c *gin.Context) {
 		return
 	}
 	if client == nil {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatusJSON(http.StatusNotFound,
+			gin.H{"message": fmt.Sprintf("Client %s not found", useralias)})
 		return
 	}
 
